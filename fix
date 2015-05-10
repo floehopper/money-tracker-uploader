@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "dotenv"
+Dotenv.load
+
+filename = ARGV[0]
+
+bank_sortcode = ENV.fetch("FIRST_DIRECT_SORTCODE")
+money_tracker_host = ENV.fetch("MONEY_TRACKER_HOST")
+money_tracker_username = ENV.fetch("MONEY_TRACKER_USERNAME")
+money_tracker_password = ENV.fetch("MONEY_TRACKER_PASSWORD")
+path_to_fixofx = ENV.fetch("PATH_TO_FIXOFX")
+
+extension = File.extname(filename)
+basename = File.basename(filename, extension)
+datestamp, account_number = basename.split("_")
+fixed_filename = "#{basename}.fixed.ofx"
+
+if extension.downcase == '.qif'
+  # assume first direct
+  %x[#{path_to_fixofx}/fixofx.py --file=#{filename} --acctid=#{account_number} --bankid=#{bank_sortcode} | sed '/^<!--/d' > #{fixed_filename}]
+elsif extension.downcase == '.ofx'
+  # assume barclaycard
+  %x[iconv -f ISO-8859-1 -t UTF-8 #{filename} | sed 's/CCACCTFROM/BANKACCTFROM/' >#{fixed_filename}]
+end
+
+require "mechanize"
+
+Mechanize.new do |agent|
+  agent.add_auth(money_tracker_host, money_tracker_username, money_tracker_password)
+  agent.get("#{money_tracker_host}/uploads/new") do |upload_page|
+    upload_form = upload_page.form_with(id: 'new_upload')
+    upload_page.form_with(method: 'POST') do |upload_form|
+      upload_form.file_upload_with(name: 'upload[ofx_file]').file_name = fixed_filename
+    end.submit
+    result_page = agent.current_page
+    if result_page.code == "200"
+      puts "Submission successful."
+      puts result_page.search('#flash').text
+    else
+      puts result_page.body
+    end
+  end
+end
