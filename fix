@@ -11,11 +11,12 @@ money_tracker_host = ENV.fetch("MONEY_TRACKER_HOST")
 money_tracker_username = ENV.fetch("MONEY_TRACKER_USERNAME")
 money_tracker_password = ENV.fetch("MONEY_TRACKER_PASSWORD")
 path_to_fixofx = ENV.fetch("PATH_TO_FIXOFX")
+output_path = ENV.fetch("OUTPUT_PATH")
 
 extension = File.extname(filename)
 basename = File.basename(filename, extension)
 datestamp, account_number = basename.split("_")
-fixed_filename = "#{basename}.fixed.ofx"
+fixed_filename = File.join(output_path, "#{basename}.fixed.ofx")
 
 if extension.downcase == '.qif'
   # assume first direct
