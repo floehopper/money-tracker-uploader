@@ -18,3 +18,4 @@ Converts QIF files downloaded from First Direct and OFX files from Barclaycard, 
     MONEY_TRACKER_USERNAME
     MONEY_TRACKER_PASSWORD
     PATH_TO_FIXOFX
+    OUTPUT_PATH
