@@ -8,7 +8,7 @@ Converts QIF files downloaded from First Direct and OFX files from Barclaycard, 
 * sed
 * iconv (tested with GNU libiconv 1.11)
 * [fixofx](https://github.com/wesabe/fixofx)
- * Python >= v2.6
+ * Python >= v2.6 < v3
 * OS X Automator
 
 ## Environment variables
